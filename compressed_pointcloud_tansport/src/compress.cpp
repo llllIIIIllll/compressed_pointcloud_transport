@@ -32,7 +32,7 @@ class MinimalSubscriber : public rclcpp::Node
     : Node("minimal_subscriber")
     {
         bool showStatistics = true;
-        pcl::io::compression_Profiles_e compressionProfile = pcl::io::MED_RES_ONLINE_COMPRESSION_WITH_COLOR;
+        pcl::io::compression_Profiles_e compressionProfile = pcl::io::LOW_RES_ONLINE_COMPRESSION_WITHOUT_COLOR;
 
         PointCloudEncoder = new pcl::io::OctreePointCloudCompression<PointT> (compressionProfile, showStatistics);
         PointCloudDecoder = new pcl::io::OctreePointCloudCompression<PointT> ();
@@ -58,17 +58,16 @@ class MinimalSubscriber : public rclcpp::Node
         std::stringstream compressedData;
         // Must convert from sensor_msg::PointCloud2 to pcl::PointCloud<PointT> for the encoder
         pcl::fromROSMsg(*msg, *pclCloud);
-        std::cout << "end" << std::endl;
 
+        // Compress the pointcloud
+        PointCloudEncoder->encodePointCloud (pclCloud, compressedData);
 
         // Pack into a compressed message
         compressed_pointcloud_interfaces::msg::CompressedPointCloud output;
         output.header = msg->header;
         output.data = compressedData.str();
         publisher_->publish(output);
-
-        // Compress the pointcloud
-        // PointCloudEncoder->encodePointCloud (pclCloud, compressedData);
+        std::cout << "end" << std::endl;
 
     }
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr subscription_;
