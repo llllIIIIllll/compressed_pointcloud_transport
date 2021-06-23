@@ -38,6 +38,7 @@ class MinimalSubscriber : public rclcpp::Node
         PointCloudDecoder = new pcl::io::OctreePointCloudCompression<PointT> ();
 
         publisher_ = this->create_publisher<compressed_pointcloud_interfaces::msg::CompressedPointCloud>("/compress", 10);
+        publisher_output = this->create_publisher<sensor_msgs::msg::PointCloud2>("/uncompress", 10);
         
         subscription_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         "/id/pandar/front", 10, std::bind(&MinimalSubscriber::topic_callback, this, std::placeholders::_1));
@@ -52,7 +53,10 @@ class MinimalSubscriber : public rclcpp::Node
   private:
     void topic_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) const
     {
-        pcl::PointCloud<PointT>::Ptr pclCloud(new pcl::PointCloud<PointT>);;
+        pcl::PointCloud<PointT>::Ptr pclCloud(new pcl::PointCloud<PointT>);
+        pcl::PointCloud<PointT>::Ptr pclCloud2(new pcl::PointCloud<PointT>);
+        sensor_msgs::msg::PointCloud2::Ptr ros_cloud(new sensor_msgs::msg::PointCloud2);
+
         // Stringstream to store compressed point cloud
         std::cout << "start" << std::endl;
         std::stringstream compressedData;
@@ -67,11 +71,19 @@ class MinimalSubscriber : public rclcpp::Node
         output.header = msg->header;
         output.data = compressedData.str();
         publisher_->publish(output);
+
+       PointCloudDecoder->decodePointCloud(compressedData, pclCloud2);
+ 
+       pcl::toROSMsg(*pclCloud2, *ros_cloud);
+       ros_cloud->header = msg->header;
+
+      publisher_output->publish(*ros_cloud);
         std::cout << "end" << std::endl;
 
     }
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr subscription_;
     rclcpp::Publisher<compressed_pointcloud_interfaces::msg::CompressedPointCloud>::SharedPtr publisher_;
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher_output;
 
 };
 
