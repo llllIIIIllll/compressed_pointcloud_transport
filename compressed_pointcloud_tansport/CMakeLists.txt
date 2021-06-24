@@ -45,6 +45,18 @@ target_link_libraries(compress
 	${PCL_LIBRARIES}
 )
 
+add_executable(decompress
+  src/decompress.cpp
+)
+
+ament_target_dependencies(decompress rclcpp std_msgs compressed_pointcloud_interfaces)
+
+# link libraries
+target_link_libraries(decompress
+	${Boost_LIBRARY}
+	${PCL_LIBRARIES}
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
@@ -55,5 +67,10 @@ if(BUILD_TESTING)
   #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+install(TARGETS 
+  compress
+  decompress
+DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

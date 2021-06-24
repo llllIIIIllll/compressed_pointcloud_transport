@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include <iostream>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +15,7 @@
 //PCL specific includes
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
 #include "pcl_conversions/pcl_conversions.h"
 #include <pcl/compression/octree_pointcloud_compression.h>
 
@@ -29,7 +31,7 @@ class MinimalSubscriber : public rclcpp::Node
 {
   public:
     MinimalSubscriber()
-    : Node("minimal_subscriber")
+    : Node("minimal")
     {
         bool showStatistics = true;
         pcl::io::compression_Profiles_e compressionProfile = pcl::io::LOW_RES_ONLINE_COMPRESSION_WITHOUT_COLOR;
@@ -52,22 +54,31 @@ class MinimalSubscriber : public rclcpp::Node
   private:
     void topic_callback(const compressed_pointcloud_interfaces::msg::CompressedPointCloud::SharedPtr msg) const
     {
-        pcl::PointCloud<PointT>::Ptr pclCloud(new pcl::PointCloud<PointT>);;
-        // Stringstream to store compressed point cloud
-        std::cout << "start" << std::endl;
-        std::stringstream compressedData;
-        // Must convert from sensor_msg::PointCloud2 to pcl::PointCloud<PointT> for the encoder
-        pcl::fromROSMsg(*msg, *pclCloud);
+        sensor_msgs::msg::PointCloud2::Ptr ros_cloud(new sensor_msgs::msg::PointCloud2);
+        pcl::PointCloud<PointT>::Ptr pclCloud(new pcl::PointCloud<PointT>);
 
-        // Compress the pointcloud
-        PointCloudEncoder->encodePointCloud (pclCloud, compressedData);
+        std::cout << "start" << msg->data.size() << std::endl;
+        std::stringstream compressedData(msg->data);
 
         // Pack into a compressed message
-        compressed_pointcloud_interfaces::msg::CompressedPointCloud output;
-        output.header = msg->header;
-        output.data = compressedData.str();
-        publisher_->publish(output);
+        try
+        {
+          /* code */
+          PointCloudDecoder->decodePointCloud(compressedData, pclCloud);
+        }
+        catch(const std::exception& e)
+        {
+          std::cerr << e.what() << '\n';
+        }
+        
         std::cout << "end" << std::endl;
+
+        pcl::toROSMsg(*pclCloud, *ros_cloud);
+
+        ros_cloud->header = msg->header;
+        ros_cloud->header.frame_id = "front";
+
+        publisher_->publish(*ros_cloud);
 
     }
     rclcpp::Subscription<compressed_pointcloud_interfaces::msg::CompressedPointCloud>::SharedPtr subscription_;

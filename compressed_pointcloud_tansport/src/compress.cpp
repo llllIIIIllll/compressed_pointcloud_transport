@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+#include <iostream>
+#include <vector>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,11 +40,9 @@ class MinimalSubscriber : public rclcpp::Node
         PointCloudDecoder = new pcl::io::OctreePointCloudCompression<PointT> ();
 
         publisher_ = this->create_publisher<compressed_pointcloud_interfaces::msg::CompressedPointCloud>("/compress", 10);
-        publisher_output = this->create_publisher<sensor_msgs::msg::PointCloud2>("/uncompress", 10);
         
         subscription_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         "/id/pandar/front", 10, std::bind(&MinimalSubscriber::topic_callback, this, std::placeholders::_1));
-
 
     }
 
@@ -69,21 +69,16 @@ class MinimalSubscriber : public rclcpp::Node
         // Pack into a compressed message
         compressed_pointcloud_interfaces::msg::CompressedPointCloud output;
         output.header = msg->header;
-        output.data = compressedData.str();
+
+		output.data = compressedData.str();
+
         publisher_->publish(output);
 
-       PointCloudDecoder->decodePointCloud(compressedData, pclCloud2);
- 
-       pcl::toROSMsg(*pclCloud2, *ros_cloud);
-       ros_cloud->header = msg->header;
 
-      publisher_output->publish(*ros_cloud);
-        std::cout << "end" << std::endl;
 
     }
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr subscription_;
     rclcpp::Publisher<compressed_pointcloud_interfaces::msg::CompressedPointCloud>::SharedPtr publisher_;
-    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher_output;
 
 };
 
