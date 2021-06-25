@@ -7,11 +7,13 @@ namespace compress_pt
     {
         PointCloudDecoder = new pcl::io::OctreePointCloudCompression<PointT> ();
 
-        publisher_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/uncompress", 10);
-        
-        subscription_ = this->create_subscription<compressed_pointcloud_interfaces::msg::CompressedPointCloud>(
-        "/compress", 10, std::bind(&DeCompress::topic_callback, this, std::placeholders::_1));
+        this->get_parameter_or("input_topic_name", input_topic_name_, std::string("/id/pandar/front/compress"));
+        this->get_parameter_or("output_topic_name", output_topic_name_, std::string(input_topic_name_ + "/uncompress"));
 
+        subscription_ = this->create_subscription<compressed_pointcloud_interfaces::msg::CompressedPointCloud>(
+        input_topic_name_, 10, std::bind(&DeCompress::topic_callback, this, std::placeholders::_1));
+
+        publisher_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(output_topic_name_, 10);
     }
 
     DeCompress::~DeCompress()
@@ -22,29 +24,23 @@ namespace compress_pt
         sensor_msgs::msg::PointCloud2::Ptr ros_cloud(new sensor_msgs::msg::PointCloud2);
         pcl::PointCloud<PointT>::Ptr pclCloud(new pcl::PointCloud<PointT>);
 
-        std::cout << "start" << msg->data.size() << std::endl;
         std::stringstream compressedData(msg->data);
 
         // Pack into a compressed message
         try
         {
-          /* code */
-          PointCloudDecoder->decodePointCloud(compressedData, pclCloud);
+            /* code */
+            PointCloudDecoder->decodePointCloud(compressedData, pclCloud);
         }
         catch(const std::exception& e)
         {
-          std::cerr << e.what() << '\n';
+            std::cerr << e.what() << '\n';
         }
-        
-        std::cout << "end" << std::endl;
 
         pcl::toROSMsg(*pclCloud, *ros_cloud);
-
         ros_cloud->header = msg->header;
-        ros_cloud->header.frame_id = "front";
 
         publisher_->publish(*ros_cloud);
-
     }
 
 };

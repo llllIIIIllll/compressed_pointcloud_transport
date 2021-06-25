@@ -6,16 +6,18 @@ namespace compress_pt
     Compress::Compress()
     : Node("minimal_subscriber")
     {
+        this->get_parameter_or("input_topic_name", input_topic_name_, std::string("/id/pandar/front"));
+        this->get_parameter_or("output_topic_name", output_topic_name_, std::string(input_topic_name_ + "/compress"));
+
         bool showStatistics = true;
         pcl::io::compression_Profiles_e compressionProfile = pcl::io::LOW_RES_ONLINE_COMPRESSION_WITHOUT_COLOR;
 
         PointCloudEncoder = new pcl::io::OctreePointCloudCompression<PointT> (compressionProfile, showStatistics);
 
-        publisher_ = this->create_publisher<compressed_pointcloud_interfaces::msg::CompressedPointCloud>("/compress", 10);
-        
         subscription_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-        "/id/pandar/front", 10, std::bind(&Compress::topic_callback, this, std::placeholders::_1));
+        input_topic_name_, 10, std::bind(&Compress::topic_callback, this, std::placeholders::_1));
 
+        publisher_ = this->create_publisher<compressed_pointcloud_interfaces::msg::CompressedPointCloud>(output_topic_name_, 10);
     }
 
     Compress::~Compress()

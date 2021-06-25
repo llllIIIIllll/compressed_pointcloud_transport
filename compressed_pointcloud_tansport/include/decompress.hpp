@@ -40,6 +40,9 @@ private:
 
     pcl::io::OctreePointCloudCompression<PointT>* PointCloudDecoder;
 
+    std::string input_topic_name_;
+    std::string output_topic_name_;
+
     rclcpp::Subscription<compressed_pointcloud_interfaces::msg::CompressedPointCloud>::SharedPtr subscription_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher_;
 
