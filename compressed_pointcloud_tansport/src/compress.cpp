@@ -1,64 +1,31 @@
-#include <chrono>
-#include <functional>
-#include <memory>
-#include <string>
 
-#include <iostream>
-#include <vector>
-#include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
+#include "compress.hpp"
 
-#include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
-#include "sensor_msgs/msg/point_cloud2.hpp"
-
-//PCL specific includes
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include "pcl_conversions/pcl_conversions.h"
-#include <pcl/compression/octree_pointcloud_compression.h>
-
-#include "compressed_pointcloud_interfaces/msg/compressed_point_cloud.hpp"
-
-
-using namespace std::chrono_literals;
-
-typedef pcl::PointXYZ PointT;
-
-
-class MinimalSubscriber : public rclcpp::Node
+namespace compress_pt
 {
-  public:
-    MinimalSubscriber()
+    Compress::Compress()
     : Node("minimal_subscriber")
     {
         bool showStatistics = true;
         pcl::io::compression_Profiles_e compressionProfile = pcl::io::LOW_RES_ONLINE_COMPRESSION_WITHOUT_COLOR;
 
         PointCloudEncoder = new pcl::io::OctreePointCloudCompression<PointT> (compressionProfile, showStatistics);
-        PointCloudDecoder = new pcl::io::OctreePointCloudCompression<PointT> ();
 
         publisher_ = this->create_publisher<compressed_pointcloud_interfaces::msg::CompressedPointCloud>("/compress", 10);
         
         subscription_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-        "/id/pandar/front", 10, std::bind(&MinimalSubscriber::topic_callback, this, std::placeholders::_1));
+        "/id/pandar/front", 10, std::bind(&Compress::topic_callback, this, std::placeholders::_1));
 
     }
 
-    pcl::io::OctreePointCloudCompression<PointT>* PointCloudEncoder;
-    pcl::io::OctreePointCloudCompression<PointT>* PointCloudDecoder;
+    Compress::~Compress()
+    {}
 
-
-  private:
-    void topic_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) const
+    void Compress::topic_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) const
     {
         pcl::PointCloud<PointT>::Ptr pclCloud(new pcl::PointCloud<PointT>);
-        pcl::PointCloud<PointT>::Ptr pclCloud2(new pcl::PointCloud<PointT>);
-        sensor_msgs::msg::PointCloud2::Ptr ros_cloud(new sensor_msgs::msg::PointCloud2);
 
         // Stringstream to store compressed point cloud
-        std::cout << "start" << std::endl;
         std::stringstream compressedData;
         // Must convert from sensor_msg::PointCloud2 to pcl::PointCloud<PointT> for the encoder
         pcl::fromROSMsg(*msg, *pclCloud);
@@ -73,20 +40,15 @@ class MinimalSubscriber : public rclcpp::Node
 		output.data = compressedData.str();
 
         publisher_->publish(output);
-
-
-
     }
-    rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr subscription_;
-    rclcpp::Publisher<compressed_pointcloud_interfaces::msg::CompressedPointCloud>::SharedPtr publisher_;
 
-};
+}; // namespace comporess_pt
 
 int main(int argc, char * argv[])
 {
 
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<MinimalSubscriber>());
+  rclcpp::spin(std::make_shared<compress_pt::Compress>());
   rclcpp::shutdown();
   return 0;
 }
