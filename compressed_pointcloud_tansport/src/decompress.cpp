@@ -3,7 +3,13 @@
 namespace compress_pt
 {
     DeCompress::DeCompress()
-    : Node("minimal")
+    : Node("decompress", "",
+        rclcpp::NodeOptions(
+            rclcpp::NodeOptions()
+            .allow_undeclared_parameters(true)
+            .automatically_declare_parameters_from_overrides(true)
+        )
+    )
     {
         PointCloudDecoder = new pcl::io::OctreePointCloudCompression<PointT> ();
 
