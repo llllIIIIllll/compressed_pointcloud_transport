@@ -4,11 +4,17 @@
 namespace compress_pt
 {
     Compress::Compress()
-    : Node("minimal_subscriber")
+    : Node("compress", "",
+        rclcpp::NodeOptions(
+            rclcpp::NodeOptions()
+            .allow_undeclared_parameters(true)
+            .automatically_declare_parameters_from_overrides(true)
+        )
+    )
     {
-        this->get_parameter_or("input_topic_name", input_topic_name_, std::string("/id/pandar/front"));
-        this->get_parameter_or("output_topic_name", output_topic_name_, std::string(input_topic_name_ + "/compress"));
-
+        this->get_parameter_or<std::string>("input_topic_name", input_topic_name_, std::string("/id/pandar/front"));
+        this->get_parameter_or<std::string>("output_topic_name", output_topic_name_, std::string(input_topic_name_ + "/compress"));
+        
         bool showStatistics = true;
         pcl::io::compression_Profiles_e compressionProfile = pcl::io::LOW_RES_ONLINE_COMPRESSION_WITHOUT_COLOR;
 
