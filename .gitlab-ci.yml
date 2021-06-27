@@ -36,7 +36,7 @@ deb_pkg:
   variables:
     PRODUCT_NAME: "qomolo_utils"
     PACKAGE_PREFIX: ""
-    PACKAGE_NAME: "qomolo-foxy-compressed-pointcloud-transport"
+    PACKAGE_NAME: "ros-foxy-qomolo-compressed-pointcloud-transport"
     PACKAGE_INSTALL_PATH: "/opt/qomolo/ros-foxy/compressed-pointcloud-transport/"
     PACKAGE_MAINTAINER: "baolong.wang@westwell-lab.com"
     PACKAGE_DESCRIPTION: "This is a qomolo ros pointcloud compress & decompress package"
