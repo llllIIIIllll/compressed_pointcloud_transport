@@ -3,7 +3,7 @@
 namespace compress_pt
 {
     DeCompress::DeCompress()
-    : Node("decompress", "",
+    : Node("decompress", 
         rclcpp::NodeOptions(
             rclcpp::NodeOptions()
             .allow_undeclared_parameters(true)
@@ -15,6 +15,9 @@ namespace compress_pt
 
         this->get_parameter_or("input_topic_name", input_topic_name_, std::string("/id/pandar/front/compress"));
         this->get_parameter_or("output_topic_name", output_topic_name_, std::string(input_topic_name_ + "/uncompress"));
+
+        RCLCPP_INFO(this->get_logger(), "input:  '%s' ", input_topic_name_.c_str());
+        RCLCPP_INFO(this->get_logger(), "output: '%s' ", output_topic_name_.c_str());
 
         subscription_ = this->create_subscription<compressed_pointcloud_interfaces::msg::CompressedPointCloud>(
         input_topic_name_, 10, std::bind(&DeCompress::topic_callback, this, std::placeholders::_1));

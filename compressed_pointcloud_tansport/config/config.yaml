@@ -1,4 +1,9 @@
-compressed_pointcloud_transport:
+igv1:
     compress:
         ros__parameters:
-            input_topic_name: "/igv1/pandar/front"
+            input_topic_name:  "pandar/front"
+            output_topic_name: "pandar/front/compress"
+    decompress:
+        ros__parameters:
+            input_topic_name:  "pandar/front/compress"
+            output_topic_name: "pandar/front/uncompress"

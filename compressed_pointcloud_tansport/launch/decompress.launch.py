@@ -3,6 +3,8 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
+qomolo_robot_id = os.environ.get("QOMOLO_ROBOT_ID","id")
+
 def generate_launch_description():
    ld = LaunchDescription()
 
@@ -14,7 +16,7 @@ def generate_launch_description():
 
    node=Node(package='compressed_pointcloud_transport', 
       executable='decompress',
-      namespace='/igv1', 
+      namespace=qomolo_robot_id, 
       name='decompress', 
       parameters = [config]
    )

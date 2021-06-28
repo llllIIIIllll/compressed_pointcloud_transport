@@ -4,7 +4,7 @@
 namespace compress_pt
 {
     Compress::Compress()
-    : Node("compress", "",
+    : Node("compress", 
         rclcpp::NodeOptions(
             rclcpp::NodeOptions()
             .allow_undeclared_parameters(true)
@@ -12,9 +12,13 @@ namespace compress_pt
         )
     )
     {
+
         this->get_parameter_or<std::string>("input_topic_name", input_topic_name_, std::string("/id/pandar/front"));
         this->get_parameter_or<std::string>("output_topic_name", output_topic_name_, std::string(input_topic_name_ + "/compress"));
-        
+
+        RCLCPP_INFO(this->get_logger(), "input:  '%s' ", input_topic_name_.c_str());
+        RCLCPP_INFO(this->get_logger(), "output: '%s' ", output_topic_name_.c_str());
+
         bool showStatistics = true;
         pcl::io::compression_Profiles_e compressionProfile = pcl::io::LOW_RES_ONLINE_COMPRESSION_WITHOUT_COLOR;
 
