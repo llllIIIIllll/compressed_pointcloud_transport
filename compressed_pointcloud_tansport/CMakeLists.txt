@@ -33,6 +33,16 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
+add_library(compressed_pointcloud_transport SHARED
+  src/compressed_pointcloud_transport.cpp
+)
+
+# link libraries
+target_link_libraries(compressed_pointcloud_transport
+	${Boost_LIBRARY}
+	${PCL_LIBRARIES}
+)
+
 add_executable(compress
   src/compress.cpp
 )
@@ -43,6 +53,7 @@ ament_target_dependencies(compress rclcpp std_msgs compressed_pointcloud_interfa
 target_link_libraries(compress
 	${Boost_LIBRARY}
 	${PCL_LIBRARIES}
+  compressed_pointcloud_transport
 )
 
 add_executable(decompress
@@ -55,6 +66,7 @@ ament_target_dependencies(decompress rclcpp std_msgs compressed_pointcloud_inter
 target_link_libraries(decompress
 	${Boost_LIBRARY}
 	${PCL_LIBRARIES}
+  compressed_pointcloud_transport
 )
 
 if(BUILD_TESTING)
@@ -71,7 +83,12 @@ endif()
 install(TARGETS 
   compress
   decompress
+  compressed_pointcloud_transport
 DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS 
+  compressed_pointcloud_transport
+DESTINATION lib)
 
 install(DIRECTORY 
 launch

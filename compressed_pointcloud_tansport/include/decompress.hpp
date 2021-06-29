@@ -1,25 +1,27 @@
-#include <chrono>
-#include <functional>
-#include <memory>
-#include <string>
+// #include <chrono>
+// #include <functional>
+// #include <memory>
+// #include <string>
 
-#include <iostream>
-#include <vector>
-#include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
+// #include <iostream>
+// #include <vector>
+// #include <sstream>
+// #include <stdio.h>
+// #include <stdlib.h>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 
-//PCL specific includes
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include "pcl_conversions/pcl_conversions.h"
-#include <pcl/compression/octree_pointcloud_compression.h>
+// //PCL specific includes
+// #include <pcl/point_cloud.h>
+// #include <pcl/point_types.h>
+// #include "pcl_conversions/pcl_conversions.h"
+// #include <pcl/compression/octree_pointcloud_compression.h>
 
 #include "compressed_pointcloud_interfaces/msg/compressed_point_cloud.hpp"
+#include "pcl_conversions/pcl_conversions.h"
+#include "compressed_pointcloud_transport.hpp"
 
 
 using namespace std::chrono_literals;
@@ -38,7 +40,7 @@ public:
 
 private:
 
-    pcl::io::OctreePointCloudCompression<PointT>* PointCloudDecoder;
+    CompressedPointcloudTransport cpt;
 
     std::string input_topic_name_;
     std::string output_topic_name_;

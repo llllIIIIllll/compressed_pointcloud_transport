@@ -11,8 +11,6 @@ namespace compress_pt
         )
     )
     {
-        PointCloudDecoder = new pcl::io::OctreePointCloudCompression<PointT> ();
-
         this->get_parameter_or("input_topic_name", input_topic_name_, std::string("/id/pandar/front/compress"));
         this->get_parameter_or("output_topic_name", output_topic_name_, std::string(input_topic_name_ + "/uncompress"));
 
@@ -39,7 +37,7 @@ namespace compress_pt
         try
         {
             /* code */
-            PointCloudDecoder->decodePointCloud(compressedData, pclCloud);
+            cpt.PointCloudDecoder->decodePointCloud(compressedData, pclCloud);
         }
         catch(const std::exception& e)
         {

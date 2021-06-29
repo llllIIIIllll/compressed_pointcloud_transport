@@ -19,11 +19,6 @@ namespace compress_pt
         RCLCPP_INFO(this->get_logger(), "input:  '%s' ", input_topic_name_.c_str());
         RCLCPP_INFO(this->get_logger(), "output: '%s' ", output_topic_name_.c_str());
 
-        bool showStatistics = true;
-        pcl::io::compression_Profiles_e compressionProfile = pcl::io::LOW_RES_ONLINE_COMPRESSION_WITHOUT_COLOR;
-
-        PointCloudEncoder = new pcl::io::OctreePointCloudCompression<PointT> (compressionProfile, showStatistics);
-
         subscription_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         input_topic_name_, 10, std::bind(&Compress::topic_callback, this, std::placeholders::_1));
 
@@ -43,7 +38,7 @@ namespace compress_pt
         pcl::fromROSMsg(*msg, *pclCloud);
 
         // Compress the pointcloud
-        PointCloudEncoder->encodePointCloud (pclCloud, compressedData);
+        cpt.PointCloudEncoder->encodePointCloud (pclCloud, compressedData);
 
         // Pack into a compressed message
         compressed_pointcloud_interfaces::msg::CompressedPointCloud output;
