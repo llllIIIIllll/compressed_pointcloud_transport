@@ -14,11 +14,13 @@ namespace compress_pt
         this->get_parameter_or("input_topic_name", input_topic_name_, std::string("/id/pandar/front/compress"));
         this->get_parameter_or("output_topic_name", output_topic_name_, std::string(input_topic_name_ + "/uncompress"));
 
+        auto best_effort_qos_profile = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
+
         RCLCPP_INFO(this->get_logger(), "input:  '%s' ", input_topic_name_.c_str());
         RCLCPP_INFO(this->get_logger(), "output: '%s' ", output_topic_name_.c_str());
 
         subscription_ = this->create_subscription<compressed_pointcloud_interfaces::msg::CompressedPointCloud>(
-        input_topic_name_, 10, std::bind(&DeCompress::topic_callback, this, std::placeholders::_1));
+        input_topic_name_, best_effort_qos_profile, std::bind(&DeCompress::topic_callback, this, std::placeholders::_1));
 
         publisher_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(output_topic_name_, 10);
     }
