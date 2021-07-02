@@ -2,7 +2,7 @@
 
 CompressedPointcloudTransport::CompressedPointcloudTransport()
 {
-	showStatistics = true;
+	showStatistics = false;
 	compressionProfile = pcl::io::LOW_RES_ONLINE_COMPRESSION_WITHOUT_COLOR;
 
 	PointCloudEncoder = new pcl::io::OctreePointCloudCompression<PointT>(compressionProfile, showStatistics);
