@@ -71,6 +71,7 @@ target_link_libraries(decompress
   ${catkin_LIBRARIES}
 	${Boost_LIBRARY}
 	${PCL_LIBRARIES}
+  compressed_pointcloud_transport
 )
 
 # add_executable(decompress

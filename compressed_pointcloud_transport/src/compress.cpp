@@ -7,26 +7,55 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <pcl/compression/octree_pointcloud_compression.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/ros/conversions.h>
+#include <pcl/conversions.h>
+#include <pcl/compression/octree_pointcloud_compression.h>
 
 #include <pcl_ros/point_cloud.h>
 
 #include "compressed_pointcloud_transport.hpp"
 #include <compressed_pointcloud_interfaces/CompressedPointCloud.h>
 
-ros::Publisher pub;
-pcl::PointCloud<PointT>::Ptr pclCloud(new pcl::PointCloud<PointT>);
+class Compressor{
 
-CompressedPointcloudTransport cpt;
+protected:
+    ros::NodeHandle nh_, pnh_;
+    ros::Publisher pub_;
+    boost::shared_ptr<ros::Subscriber> sub_;
 
-void topic_callback (const sensor_msgs::PointCloud2::ConstPtr& rosCloud)
-{
-    if(pub.getNumSubscribers())
+    std::string input_topic_name_  = "/id/pandar/front";
+    std::string output_topic_name_ = "/id/pandar/front/compress";
+
+    CompressedPointcloudTransport cpt;
+
+    ros::Timer subscriber_timer_;
+
+public:
+    Compressor()
+        :
+        nh_("~")
+        , pnh_("~")
+        // ,pcl_cloud(new pcl::PointCloud<PointT>)
     {
+
+        nh_.getParam("input_topic_name", input_topic_name_);
+        nh_.getParam("output_topic_name", output_topic_name_);
+
+        // Create a ROS publisher for the output point cloud
+        pub_ = nh_.advertise<compressed_pointcloud_interfaces::CompressedPointCloud>(output_topic_name_, 1);
+
+        // Create a ROS subscriber for the input point cloud
+        sub_.reset(new ros::Subscriber());
+        *sub_ = nh_.subscribe(input_topic_name_, 2, &Compressor::topic_callback, this);
+    }
+
+protected:
+    //void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input) {
+    void topic_callback (const sensor_msgs::PointCloud2::ConstPtr& rosCloud)
+    {
+        pcl::PointCloud<PointT>::Ptr pclCloud(new pcl::PointCloud<PointT>);
         // Stringstream to store compressed point cloud
         std::stringstream compressedData;
 
@@ -40,28 +69,18 @@ void topic_callback (const sensor_msgs::PointCloud2::ConstPtr& rosCloud)
         compressed_pointcloud_interfaces::CompressedPointCloud output;
         output.header = rosCloud->header;
         output.data = compressedData.str();
-        pub.publish(output);
+        pub_.publish(output);
     }
-    else
-        ROS_DEBUG_NAMED("compressor" ,"Received input cloud but there are no subscribers; not publishing.");
-}
+};
 
 
 int main(int argc, char * argv[])
 {
+    // Initialize ROS
+    ros::init(argc, argv, "cloud_compressor");
+    Compressor comp;
 
-    ros::init(argc, argv, "pointcloud_compress");
-    ros::NodeHandle nh;
-
-    std::string input_topic_name  = "/id/pandar/front";
-    std::string output_topic_name = "/id/pandar/front/compress";
-
-    nh.getParam("input_topic_name", input_topic_name);
-    nh.getParam("output_topic_name", output_topic_name);
-
-    ros::Subscriber sub = nh.subscribe(input_topic_name, 1, topic_callback);
-    pub = nh.advertise<compressed_pointcloud_interfaces::CompressedPointCloud>(output_topic_name, 10);
-
+    ros::Duration(1.0).sleep();
     ros::spin();
     return 0;
 }
