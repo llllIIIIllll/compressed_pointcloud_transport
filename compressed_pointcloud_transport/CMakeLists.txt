@@ -15,14 +15,22 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rospy
+  std_msgs
+  pcl_ros
+  message_generation
+  compressed_pointcloud_interfaces
+)
+
 # find dependencies
-find_package(ament_cmake REQUIRED)
 find_package(PCL REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(builtin_interfaces REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(compressed_pointcloud_interfaces REQUIRED)
+
+catkin_package(CATKIN_DEPENDS
+	roscpp rospy std_msgs message_runtime
+	pcl_ros
+  )
 
 ## PCL library
 link_directories(${PCL_LIBRARY_DIRS})
@@ -31,6 +39,7 @@ add_definitions(${PCL_DEFINITIONS})
 include_directories(
 	include
   ${PCL_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_library(compressed_pointcloud_transport SHARED
@@ -47,10 +56,8 @@ add_executable(compress
   src/compress.cpp
 )
 
-ament_target_dependencies(compress rclcpp std_msgs compressed_pointcloud_interfaces)
-
-# link libraries
 target_link_libraries(compress
+  ${catkin_LIBRARIES}
 	${Boost_LIBRARY}
 	${PCL_LIBRARIES}
   compressed_pointcloud_transport
@@ -60,39 +67,42 @@ add_executable(decompress
   src/decompress.cpp
 )
 
-ament_target_dependencies(decompress rclcpp std_msgs compressed_pointcloud_interfaces)
-
-# link libraries
 target_link_libraries(decompress
+  ${catkin_LIBRARIES}
 	${Boost_LIBRARY}
 	${PCL_LIBRARIES}
-  compressed_pointcloud_transport
 )
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # uncomment the line when a copyright and license is not present in all source files
-  #set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # uncomment the line when this package is not in a git repo
-  #set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
+# add_executable(decompress
+#   src/decompress.cpp
+# )
 
-install(TARGETS 
+# ament_target_dependencies(decompress rclcpp std_msgs compressed_pointcloud_interfaces)
+
+# # link libraries
+# target_link_libraries(decompress
+# 	${Boost_LIBRARY}
+# 	${PCL_LIBRARIES}
+#   compressed_pointcloud_transport
+# )
+
+## Mark libraries for installation
+# See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
+install(TARGETS
   compress
   decompress
-  compressed_pointcloud_transport
-DESTINATION lib/${PROJECT_NAME})
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
-install(TARGETS 
-  compressed_pointcloud_transport
-DESTINATION lib)
-
-install(DIRECTORY 
-launch
-config
-DESTINATION share/${PROJECT_NAME})
-
-ament_package()
+## Mark cpp header files for installation
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE
+# )
