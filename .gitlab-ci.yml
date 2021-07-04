@@ -1,14 +1,14 @@
-# include:
-#   - project: 'cicd/templates/default_template'
-#     file: '/workflow/standalone_deb.yml'
-#     ref: dev_dist
+include:
+  - project: 'cicd/templates/default_template'
+    file: '/workflow/standalone_deb.yml'
+    ref: dev_dist
 
-# prepare:
-#   extends: .workflow:standalone_deb:prepare
-#   variables:
-#     VERSION_FILE: "./VERSION" 
-#     RELEASE_NOTE_FILE: "./RELEASENOTE.md"
-#     PRODUCT_NAME: "qomolo_utils"
+prepare:
+  extends: .workflow:standalone_deb:prepare
+  variables:
+    VERSION_FILE: "./VERSION" 
+    RELEASE_NOTE_FILE: "./RELEASENOTE.md"
+    PRODUCT_NAME: "qomolo_utils"
 
 # build:
 #   extends: .workflow:standalone_deb:build
